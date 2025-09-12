@@ -5,21 +5,22 @@ import com.coding.demo.dto.ResponseDto;
 import com.coding.demo.dto.UserDto;
 import com.coding.demo.model.User;
 import com.coding.demo.repository.UserRepository;
+import com.coding.demo.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.Random;
 import java.util.random.RandomGenerator;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/auth")
 public class UserController {
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Autowired
     private UserRepository userRepository;
@@ -47,13 +48,13 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseDto<Object> loginUser(@RequestBody LoginDto loginDto){
+    public ResponseDto<String> loginUser(@RequestBody LoginDto loginDto){
         Optional<User> user = userRepository.getUserByUsername(loginDto.username());
         if(user.isPresent()){
             if(bCryptPasswordEncoder.matches(loginDto.password(), user.get().getPassword())){
                 return new ResponseDto<>(HttpStatus.OK,
                         "user logged in successfully",
-                        null);
+                        jwtUtil.generateToken(loginDto.username()));
             }else{
                 return new ResponseDto<>(HttpStatus.FORBIDDEN,
                         "incorrect password",
@@ -63,6 +64,11 @@ public class UserController {
         return new ResponseDto<>(HttpStatus.NOT_FOUND,
                 "user not found",
                 null);
+    }
+
+    @GetMapping("/hello")
+    public String hello(){
+        return "hello from api";
     }
 
 }
