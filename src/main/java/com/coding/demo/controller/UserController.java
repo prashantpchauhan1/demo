@@ -7,6 +7,7 @@ import com.coding.demo.model.User;
 import com.coding.demo.repository.UserRepository;
 import com.coding.demo.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ import java.util.random.RandomGenerator;
 @RestController
 @RequestMapping("/auth")
 public class UserController {
+
+    @Value("${message.greet}")
+    private String name;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -49,6 +53,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseDto<String> loginUser(@RequestBody LoginDto loginDto){
+        System.out.println(name);
         Optional<User> user = userRepository.getUserByUsername(loginDto.username());
         if(user.isPresent()){
             if(bCryptPasswordEncoder.matches(loginDto.password(), user.get().getPassword())){
